@@ -4,14 +4,15 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import random
 import string
+import certifi
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime
 from bson import ObjectId
 
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 db_name = os.environ.get('DB_NAME', 'monstock_db')
-client = AsyncIOMotorClient(mongo_url)
+client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
 db = client[db_name]
 
 app = FastAPI()
@@ -56,7 +57,6 @@ async def delete_zone(zone_id: str):
 @api_router.post("/products")
 async def create_product(product: ProductCreate):
     product_dict = product.dict()
-    # Auto-generate reference if empty
     if not product_dict.get("reference") or product_dict["reference"].strip() == "":
         timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
         random_chars = ''.join(random.choices(string.digits, k=4))
@@ -128,4 +128,4 @@ async def root():
     return {"message": "Mon Stock API"}
 
 app.include_router(api_router)
-app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])redentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
