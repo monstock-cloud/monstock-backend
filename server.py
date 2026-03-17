@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+[17:01, 17/03/2026] Moh Faw: from fastapi import FastAPI, APIRouter, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -10,9 +10,32 @@ from typing import Optional
 from datetime import datetime
 from bson import ObjectId
 
+mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhos…
+[17:12, 17/03/2026] Moh Faw: Encore une erreur. Vérifiez sur *Render* dans l'onglet *"Logs"* si le déploiement est terminé (vert) ou s'il y a encore une erreur.
+
+*En attendant*, je vais essayer une autre approche - utiliser une connexion MongoDB simplifiée sans SSL personnalisé.
+
+---
+
+## Nouvelle version - Mettez à jour server.py sur GitHub :
+
+python
+from fastapi import FastAPI, APIRouter, HTTPException
+from starlette.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+import random
+import string
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+from bson import ObjectId
+
 mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 db_name = os.environ.get('DB_NAME', 'monstock_db')
-client = AsyncIOMotorClient(mongo_url, tlsCAFile=certifi.where())
+
+# Connection with SSL settings for MongoDB Atlas
+client = AsyncIOMotorClient(mongo_url, tls=True, tlsAllowInvalidCertificates=True)
 db = client[db_name]
 
 app = FastAPI()
@@ -128,4 +151,4 @@ async def root():
     return {"message": "Mon Stock API"}
 
 app.include_router(api_router)
-app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])llow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
