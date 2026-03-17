@@ -1,4 +1,4 @@
-python
+
 from fastapi import FastAPI, APIRouter, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 import os
