@@ -2,6 +2,8 @@ from fastapi import FastAPI, APIRouter, HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import random
+import string
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -21,7 +23,7 @@ class ZoneCreate(BaseModel):
 
 class ProductCreate(BaseModel):
     name: str
-    reference: str
+    reference: Optional[str] = ""
     zone_id: str
     quantity: int = 0
 
@@ -53,10 +55,12 @@ async def delete_zone(zone_id: str):
 
 @api_router.post("/products")
 async def create_product(product: ProductCreate):
-    existing = await db.products.find_one({"reference": product.reference})
-    if existing:
-        raise HTTPException(status_code=400, detail="Reference already exists")
     product_dict = product.dict()
+    # Auto-generate reference if empty
+    if not product_dict.get("reference") or product_dict["reference"].strip() == "":
+        timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        random_chars = ''.join(random.choices(string.digits, k=4))
+        product_dict["reference"] = f"MS-{timestamp}-{random_chars}"
     product_dict["created_at"] = datetime.utcnow()
     product_dict["updated_at"] = datetime.utcnow()
     result = await db.products.insert_one(product_dict)
@@ -124,4 +128,4 @@ async def root():
     return {"message": "Mon Stock API"}
 
 app.include_router(api_router)
-app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_credentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])redentials=True, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
